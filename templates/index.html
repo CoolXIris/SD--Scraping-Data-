@@ -1,0 +1,603 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f4f6fa">
+  <title>Scraper Data | Anime, Lowongan, Statistik & Bisnis</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <main class="shell">
+    <header class="topbar">
+      <a class="brand" href="/" aria-label="Scraper Data, halaman utama">
+        <span class="brand-mark">SD</span>
+        <span>Scraper<span class="brand-muted">Data</span></span>
+      </a>
+      <span class="local-pill"><span class="dot"></span> Berjalan di komputer ini</span>
+    </header>
+
+    <section class="intro">
+      <div class="eyebrow">PENGUMPULAN DATA TERSTRUKTUR</div>
+      <h1>Atur pencarian,<br><span>lalu ambil datanya.</span></h1>
+      <p>Pilih sumber dan filter yang dibutuhkan. Hasil pengambilan data dapat diunduh sebagai file Excel.</p>
+    </section>
+
+    <nav class="tabs" aria-label="Pilih scraper">
+      <button class="tab active" type="button" data-panel="anime-panel"><span class="tab-icon">✦</span> Anime</button>
+      <button class="tab" type="button" data-panel="jobs-panel"><span class="tab-icon">▤</span> Lowongan</button>
+      <button class="tab" type="button" data-panel="bps-panel"><span class="tab-icon">▦</span> Statistik</button>
+      <button class="tab" type="button" data-panel="business-panel"><span class="tab-icon">⌖</span> Bisnis</button>
+    </nav>
+
+    <div id="options-warning" class="notice" role="status" hidden><span id="warning-text"></span><button id="refresh-options" type="button">Muat ulang pilihan</button></div>
+
+    <section id="anime-panel" class="panel active" aria-labelledby="anime-title">
+      <div class="panel-heading">
+        <div><span class="section-kicker">SUMBER 01</span><h2 id="anime-title">Anime terbaru</h2></div>
+        <span class="source-tag">otakudesu.blog</span>
+      </div>
+      <p class="section-copy">Atur status anime, rentang posting, genre, dan hari tayang.</p>
+      <form id="anime-form" class="filter-form">
+        <div class="field-grid two-col">
+          <label class="field"><span>Status rilis</span>
+            <select name="status"><option value="ongoing">Ongoing</option><option value="complete">Complete</option><option value="both">Ongoing dan complete</option></select>
+          </label>
+          <label class="field"><span>Posting dalam</span>
+            <select name="months"><option value="1">1 bulan terakhir</option><option value="6">6 bulan terakhir</option><option value="12">12 bulan terakhir</option></select>
+          </label>
+          <label class="field field-wide"><span>Genre <span class="optional">(opsional)</span></span>
+            <select name="genre" id="anime-genre"><option value="">Semua genre</option></select>
+          </label>
+        </div>
+
+        <fieldset class="day-fieldset">
+          <legend>Hari rilis <span class="optional">(opsional)</span></legend>
+          <div class="day-options">
+            <label><input type="checkbox" name="release_days" value="Senin"><span>Sen</span></label>
+            <label><input type="checkbox" name="release_days" value="Selasa"><span>Sel</span></label>
+            <label><input type="checkbox" name="release_days" value="Rabu"><span>Rab</span></label>
+            <label><input type="checkbox" name="release_days" value="Kamis"><span>Kam</span></label>
+            <label><input type="checkbox" name="release_days" value="Jumat"><span>Jum</span></label>
+            <label><input type="checkbox" name="release_days" value="Sabtu"><span>Sab</span></label>
+            <label><input type="checkbox" name="release_days" value="Minggu"><span>Min</span></label>
+          </div>
+          <p class="field-hint">Filter hari berlaku untuk anime ongoing. Data complete tetap disertakan bila statusnya mencakup keduanya.</p>
+        </fieldset>
+
+        <div class="field-grid two-col compact-grid">
+          <label class="field"><span>Batas halaman per status</span>
+            <input type="number" name="max_pages" value="0" min="0" max="1000">
+            <small>Isi 0 untuk mengikuti semua halaman dalam rentang waktu.</small>
+          </label>
+        </div>
+        <button class="primary-button" type="submit">Mulai ambil data <span aria-hidden="true">↗</span></button>
+      </form>
+    </section>
+
+    <section id="jobs-panel" class="panel" aria-labelledby="jobs-title" hidden>
+      <div class="panel-heading">
+        <div><span class="section-kicker">SUMBER 02</span><h2 id="jobs-title">Lowongan pekerjaan</h2></div>
+        <span class="source-tag">Karirhub Kemnaker</span>
+      </div>
+      <p class="section-copy">Saring lowongan publik berdasarkan provinsi, pendidikan, jenis pekerjaan, dan sumber.</p>
+      <form id="jobs-form" class="filter-form">
+        <div class="field-grid two-col">
+          <label class="field field-wide"><span>Provinsi</span>
+            <select name="province_id" id="province-select" required><option value="">Memuat daftar provinsi…</option></select>
+          </label>
+          <label class="field"><span>Pendidikan</span>
+            <select name="education_id" id="education-select"><option value="">Semua tingkat pendidikan</option></select>
+          </label>
+          <label class="field"><span>Jenis pekerjaan</span>
+            <select name="job_type_id" id="job-type-select"><option value="">Semua jenis pekerjaan</option></select>
+          </label>
+          <label class="field field-wide"><span>Sumber lowongan</span>
+            <select name="source" id="source-select"><option value="all">Semua sumber</option></select>
+          </label>
+        </div>
+        <div class="field-grid two-col compact-grid">
+          <label class="field"><span>Batas lowongan</span>
+            <input type="number" name="max_jobs" value="0" min="0" max="5000">
+            <small>Isi 0 untuk mengambil semua lowongan yang cocok.</small>
+          </label>
+        </div>
+        <button class="primary-button" type="submit">Mulai ambil data <span aria-hidden="true">↗</span></button>
+      </form>
+    </section>
+
+    <section id="bps-panel" class="panel" aria-labelledby="bps-title" hidden>
+      <div class="panel-heading">
+        <div><span class="section-kicker">SUMBER 03</span><h2 id="bps-title">Statistik menurut subjek</h2></div>
+        <span class="source-tag">BPS Indonesia</span>
+      </div>
+      <p class="section-copy">Telusuri kategori dan jenis data CSA BPS, pilih tabel, lalu ambil data untuk rentang tahun tertentu.</p>
+
+      <form id="bps-form" class="filter-form">
+        <label class="field"><span>API key WebAPI BPS</span>
+          <input type="password" name="api_key" id="bps-api-key" autocomplete="off" placeholder="Masukkan API key BPS" required>
+          <small>Diperlukan oleh WebAPI BPS. Kunci hanya digunakan selama proses dan tidak disimpan ke file. <a href="https://webapi.bps.go.id/developer/" target="_blank" rel="noopener noreferrer">Buka portal BPS untuk mendapatkannya.</a></small>
+        </label>
+
+        <div class="bps-step">
+          <div class="step-heading"><span class="step-number">1</span><span>Pilih kategori subjek</span></div>
+          <div class="hierarchy-controls">
+            <select name="category_id" id="bps-category" aria-label="Kategori subjek BPS">
+              <option value="514">Statistik Demografi &amp; Sosial</option>
+              <option value="515">Statistik Ekonomi</option>
+              <option value="516">Statistik Lingkungan Hidup dan Multi-domain</option>
+            </select>
+            <button class="secondary-button" id="browse-bps-subjects" type="button">Telusuri</button>
+          </div>
+          <p class="inline-status" id="bps-subject-status" aria-live="polite"></p>
+        </div>
+
+        <div class="bps-step" id="bps-subject-step" hidden>
+          <div class="step-heading"><span class="step-number">2</span><span>Pilih jenis data</span></div>
+          <div class="hierarchy-controls">
+            <select name="subject_id" id="bps-subject" aria-label="Jenis data BPS" disabled><option value="">Pilih jenis data</option></select>
+            <button class="secondary-button" id="search-bps-tables" type="button" disabled>Cari</button>
+          </div>
+          <p class="inline-status" id="bps-table-status" aria-live="polite"></p>
+        </div>
+
+        <div class="bps-step" id="bps-table-step" hidden>
+          <div class="step-heading"><span class="step-number">3</span><span>Pilih tabel dan rentang tahun</span></div>
+          <label class="field"><span>Nama tabel statistik</span>
+            <select name="table_id" id="bps-table" disabled required><option value="">Pilih tabel</option></select>
+          </label>
+          <div class="field-grid two-col year-grid">
+            <label class="field"><span>Dari tahun</span><input type="number" name="start_year" value="2015" min="1900" required></label>
+            <label class="field"><span>Sampai tahun</span><input type="number" name="end_year" value="2025" min="1900" required></label>
+          </div>
+          <small class="year-hint">Data diambil per tahun dalam rentang yang dipilih. Tahun yang tidak tersedia pada tabel akan dilewati dan dicatat di ringkasan.</small>
+        </div>
+
+        <button class="primary-button" id="start-bps-scrape" type="submit" disabled>Mulai ambil data <span aria-hidden="true">↗</span></button>
+      </form>
+    </section>
+
+    <section id="business-panel" class="panel" aria-labelledby="business-title" hidden>
+      <div class="panel-heading">
+        <div><span class="section-kicker">SUMBER 04</span><h2 id="business-title">Direktori bisnis</h2></div>
+        <span class="source-tag">OpenStreetMap</span>
+      </div>
+      <p class="section-copy">Cari usaha di Sumatera Selatan berdasarkan kabupaten/kota, kecamatan, dan kategori. Sumber data: <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap contributors (ODbL)</a>.</p>
+
+      <form id="business-form" class="filter-form">
+        <div class="business-step">
+          <div class="step-heading"><span class="step-number">1</span><span>Tentukan wilayah</span></div>
+          <div class="field-grid two-col">
+            <label class="field"><span>Kabupaten/kota</span>
+              <select id="business-regency" aria-label="Kabupaten atau kota di Sumatera Selatan" required disabled><option value="">Memuat daftar wilayah…</option></select>
+            </label>
+            <label class="field"><span>Kecamatan <span class="optional">(opsional)</span></span>
+              <select id="business-district" aria-label="Kecamatan" disabled><option value="">Pilih kabupaten/kota terlebih dahulu</option></select>
+            </label>
+          </div>
+          <p class="inline-status" id="business-area-status" aria-live="polite"></p>
+        </div>
+
+        <div class="business-step">
+          <div class="step-heading"><span class="step-number">2</span><span>Pilih jenis usaha</span></div>
+          <div class="field-grid two-col">
+            <label class="field"><span>Kategori bisnis</span>
+              <select name="category" id="business-category" required>
+                <option value="">Pilih kategori bisnis</option>
+                {% for category in business_categories %}
+                <option value="{{ category.value }}">{{ category.label }}</option>
+                {% endfor %}
+              </select>
+            </label>
+            <label class="field"><span>Kata kunci nama <span class="optional">(opsional)</span></span>
+              <input type="search" name="keyword" maxlength="80" placeholder="Contoh: apotek, kopi, bengkel">
+            </label>
+          </div>
+        </div>
+
+        <div class="field-grid two-col compact-grid">
+          <label class="field"><span>Batas hasil</span>
+            <input type="number" name="max_results" value="500" min="1" max="2000" required>
+            <small>Maksimal 2.000 usaha per pencarian. Pilih kecamatan untuk cakupan yang lebih sempit.</small>
+          </label>
+        </div>
+
+        <p class="business-note">Kelengkapan usaha mengikuti kontribusi OpenStreetMap. Telepon, email, situs web, dan alamat dapat kosong; skor ulasan biasanya tidak tersedia dari sumber ini.</p>
+        <button class="primary-button" id="start-business-scrape" type="submit" disabled>Mulai cari usaha <span aria-hidden="true">↗</span></button>
+      </form>
+    </section>
+
+    <section id="results" class="results" aria-live="polite" aria-label="Status pengambilan data"></section>
+
+    <footer><span>Scraper lokal</span><span>Hasil disimpan sebagai XLSX</span></footer>
+  </main>
+  <script>
+    const optionsWarning = document.getElementById('options-warning');
+    const results = document.getElementById('results');
+    const tabs = [...document.querySelectorAll('.tab')];
+
+    tabs.forEach((tab) => tab.addEventListener('click', () => {
+      tabs.forEach((item) => item.classList.toggle('active', item === tab));
+      document.querySelectorAll('.panel').forEach((panel) => {
+        const selected = panel.id === tab.dataset.panel;
+        panel.classList.toggle('active', selected);
+        panel.hidden = !selected;
+      });
+      if (tab.dataset.panel === 'business-panel') loadBusinessRegencies();
+    }));
+
+    function fillSelect(select, items, placeholder) {
+      select.replaceChildren();
+      const first = document.createElement('option');
+      first.value = '';
+      first.textContent = placeholder;
+      select.append(first);
+      items.forEach((item) => {
+        const option = document.createElement('option');
+        option.value = item.id ?? item.value ?? item;
+        option.textContent = item.name ?? item.label ?? item;
+        select.append(option);
+      });
+    }
+
+    async function loadOptions(refresh = false) {
+      optionsWarning.hidden = true;
+      try {
+        const response = await fetch(`/api/options${refresh ? '?refresh=1' : ''}`);
+        if (!response.ok) throw new Error('Daftar filter tidak dapat dimuat.');
+        const options = await response.json();
+        fillSelect(document.getElementById('anime-genre'), options.genres || [], 'Semua genre');
+        fillSelect(document.getElementById('province-select'), options.provinces || [], 'Pilih provinsi');
+        fillSelect(document.getElementById('education-select'), options.educations || [], 'Semua tingkat pendidikan');
+        fillSelect(document.getElementById('job-type-select'), options.job_types || [], 'Semua jenis pekerjaan');
+        fillSelect(document.getElementById('source-select'), options.sources || [], 'Pilih sumber');
+        document.getElementById('source-select').value = 'all';
+        if (options.provinces?.some((item) => item.name === 'Sumatera Selatan')) {
+          document.getElementById('province-select').value = options.provinces.find((item) => item.name === 'Sumatera Selatan').id;
+        }
+        if (options.warnings?.length) {
+          document.getElementById('warning-text').textContent = `${options.warnings.join(' ')} Coba muat ulang pilihan filter.`;
+          document.getElementById('refresh-options').hidden = false;
+          optionsWarning.hidden = false;
+        }
+      } catch (error) {
+        document.getElementById('warning-text').textContent = `${error.message} Pastikan koneksi internet tersedia, lalu coba lagi.`;
+        document.getElementById('refresh-options').hidden = false;
+        optionsWarning.hidden = false;
+      }
+    }
+
+    document.getElementById('refresh-options').addEventListener('click', () => loadOptions(true));
+
+    function addResultCard(job) {
+      const card = document.createElement('article');
+      card.className = 'result-card';
+      card.dataset.jobId = job.id;
+      const title = document.createElement('div');
+      title.className = 'result-title-row';
+      const heading = document.createElement('h3');
+      heading.textContent = ({anime: 'Pengambilan data anime', karirhub: 'Pengambilan lowongan Karirhub', bps: 'Pengambilan statistik BPS', business: 'Pencarian direktori bisnis'})[job.kind] || 'Pengambilan data';
+      const state = document.createElement('span');
+      state.className = 'state-pill';
+      state.textContent = job.state === 'queued' ? 'Menunggu' : 'Berjalan';
+      title.append(heading, state);
+      const message = document.createElement('p');
+      message.className = 'result-message';
+      message.textContent = job.message;
+      const track = document.createElement('div');
+      track.className = 'progress-track';
+      const bar = document.createElement('div');
+      bar.className = 'progress-bar';
+      track.append(bar);
+      const detail = document.createElement('div');
+      detail.className = 'result-detail';
+      const download = document.createElement('a');
+      download.className = 'download-button';
+      download.hidden = true;
+      download.textContent = 'Unduh XLSX ↓';
+      card.append(title, message, track, detail, download);
+      results.prepend(card);
+      return card;
+    }
+
+    function updateResultCard(card, job) {
+      card.querySelector('.result-message').textContent = job.message;
+      card.querySelector('.progress-bar').style.width = `${job.progress}%`;
+      card.querySelector('.result-detail').textContent = job.count == null ? `${job.progress}%` : `${job.count} baris data`;
+      const state = card.querySelector('.state-pill');
+      state.textContent = ({queued: 'Menunggu', running: 'Berjalan', complete: 'Selesai', error: 'Gagal'})[job.state] || job.state;
+      state.className = `state-pill state-${job.state}`;
+      if (job.state === 'error') card.classList.add('has-error');
+      const download = card.querySelector('.download-button');
+      if (job.download_url) {
+        download.href = job.download_url;
+        download.download = job.filename || 'hasil.xlsx';
+        download.hidden = false;
+      }
+    }
+
+    async function monitorJob(job, card) {
+      updateResultCard(card, job);
+      if (job.state === 'complete' || job.state === 'error') return;
+      window.setTimeout(async () => {
+        try {
+          const response = await fetch(`/api/jobs/${job.id}`);
+          const current = await response.json();
+          if (!response.ok) throw new Error(current.error || 'Status proses tidak dapat dibaca.');
+          updateResultCard(card, current);
+          monitorJob(current, card);
+        } catch (error) {
+          const message = card.querySelector('.result-message');
+          message.textContent = error.message;
+          card.querySelector('.state-pill').textContent = 'Gagal membaca status';
+        }
+      }, 1400);
+    }
+
+    async function submitForm(form, endpoint, makePayload) {
+      const button = form.querySelector('button[type="submit"]');
+      const originalText = button.innerHTML;
+      button.disabled = true;
+      button.textContent = 'Menyiapkan…';
+      try {
+        const response = await fetch(endpoint, {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify(makePayload(new FormData(form))),
+        });
+        const job = await response.json();
+        if (!response.ok) throw new Error(job.error || 'Permintaan tidak dapat diproses.');
+        monitorJob(job, addResultCard(job));
+      } catch (error) {
+        const kind = endpoint.includes('anime') ? 'anime' : endpoint.includes('bps') ? 'bps' : endpoint.includes('business') ? 'business' : 'karirhub';
+        const card = addResultCard({id: 'error', kind, state: 'error', progress: 0, message: error.message});
+        card.querySelector('.state-pill').textContent = 'Periksa filter';
+        card.classList.add('has-error');
+      } finally {
+        if (form.id === 'business-form') updateBusinessStartState();
+        else button.disabled = false;
+        button.innerHTML = originalText;
+      }
+    }
+
+    document.getElementById('anime-form').addEventListener('submit', (event) => {
+      event.preventDefault();
+      submitForm(event.currentTarget, '/api/scrape/anime', (data) => ({
+        status: data.get('status'),
+        months: Number(data.get('months')),
+        genre: data.get('genre'),
+        release_days: data.getAll('release_days'),
+        max_pages: Number(data.get('max_pages') || 0),
+      }));
+    });
+
+    document.getElementById('jobs-form').addEventListener('submit', (event) => {
+      event.preventDefault();
+      submitForm(event.currentTarget, '/api/scrape/karirhub', (data) => ({
+        province_id: data.get('province_id'),
+        education_id: data.get('education_id'),
+        job_type_id: data.get('job_type_id'),
+        source: data.get('source'),
+        max_jobs: Number(data.get('max_jobs') || 0),
+      }));
+    });
+
+    const businessRegency = document.getElementById('business-regency');
+    const businessDistrict = document.getElementById('business-district');
+    const businessAreaStatus = document.getElementById('business-area-status');
+    const businessStart = document.getElementById('start-business-scrape');
+    let businessAreasLoaded = false;
+    let businessAreasLoading = false;
+    let businessDistrictRequest = 0;
+
+    function updateBusinessStartState() {
+      businessStart.disabled = !businessRegency.value || !document.getElementById('business-category').value;
+    }
+
+    async function loadBusinessRegencies() {
+      if (businessAreasLoaded || businessAreasLoading) return;
+      businessAreasLoading = true;
+      businessRegency.disabled = true;
+      businessAreaStatus.classList.remove('status-error');
+      businessAreaStatus.textContent = 'Memuat daftar kabupaten/kota di Sumatera Selatan…';
+      try {
+        const response = await fetch('/api/business/areas?level=regency');
+        const payload = await response.json();
+        if (!response.ok) throw new Error(payload.error || 'Daftar kabupaten/kota tidak dapat dimuat.');
+        fillSelect(businessRegency, payload.areas || [], 'Pilih kabupaten/kota');
+        businessRegency.disabled = !(payload.areas || []).length;
+        businessAreasLoaded = Boolean((payload.areas || []).length);
+        businessAreaStatus.textContent = payload.areas?.length
+          ? `${payload.areas.length} kabupaten/kota tersedia.`
+          : 'Daftar wilayah kosong. Muat ulang tab untuk mencoba lagi.';
+      } catch (error) {
+        businessRegency.replaceChildren(new Option('Daftar wilayah belum tersedia', ''));
+        businessAreaStatus.textContent = `${error.message} Buka kembali tab ini untuk mencoba lagi.`;
+        businessAreaStatus.classList.add('status-error');
+      } finally {
+        businessAreasLoading = false;
+      }
+    }
+
+    async function loadBusinessDistricts() {
+      const regencyId = businessRegency.value;
+      const requestId = ++businessDistrictRequest;
+      businessDistrict.replaceChildren(new Option(regencyId ? 'Memuat kecamatan…' : 'Pilih kabupaten/kota terlebih dahulu', ''));
+      businessDistrict.disabled = true;
+      if (!regencyId) {
+        updateBusinessStartState();
+        return;
+      }
+      businessAreaStatus.classList.remove('status-error');
+      businessAreaStatus.textContent = 'Memuat daftar kecamatan…';
+      try {
+        const response = await fetch(`/api/business/areas?level=district&parent_area_id=${encodeURIComponent(regencyId)}`);
+        const payload = await response.json();
+        if (!response.ok) throw new Error(payload.error || 'Daftar kecamatan tidak dapat dimuat.');
+        if (requestId !== businessDistrictRequest) return;
+        const regencyName = businessRegency.selectedOptions[0]?.textContent || 'kabupaten/kota';
+        fillSelect(businessDistrict, payload.areas || [], `Seluruh ${regencyName}`);
+        businessDistrict.disabled = false;
+        businessAreaStatus.textContent = payload.areas?.length
+          ? `${payload.areas.length} kecamatan tersedia. Pilihan awal mencakup seluruh ${regencyName}.`
+          : `Batas kecamatan tidak tersedia; pencarian tetap dapat dilakukan untuk seluruh ${regencyName}.`;
+      } catch (error) {
+        if (requestId !== businessDistrictRequest) return;
+        const regencyName = businessRegency.selectedOptions[0]?.textContent || 'kabupaten/kota';
+        businessDistrict.replaceChildren(new Option(`Seluruh ${regencyName}`, ''));
+        businessAreaStatus.textContent = `${error.message} Pencarian tetap dapat dilakukan di seluruh kabupaten/kota.`;
+        businessAreaStatus.classList.add('status-error');
+      } finally {
+        if (requestId === businessDistrictRequest) {
+          updateBusinessStartState();
+        }
+      }
+    }
+
+    businessRegency.addEventListener('change', loadBusinessDistricts);
+    businessDistrict.addEventListener('change', updateBusinessStartState);
+    document.getElementById('business-category').addEventListener('change', updateBusinessStartState);
+    document.getElementById('business-form').addEventListener('submit', (event) => {
+      event.preventDefault();
+      const form = event.currentTarget;
+      const data = new FormData(form);
+      submitForm(form, '/api/scrape/business', () => ({
+        area_id: businessDistrict.value || businessRegency.value,
+        category: data.get('category'),
+        keyword: data.get('keyword'),
+        max_results: Number(data.get('max_results')),
+      }));
+    });
+
+    const bpsCategory = document.getElementById('bps-category');
+    const bpsSubject = document.getElementById('bps-subject');
+    const bpsTable = document.getElementById('bps-table');
+    const bpsSubjectStep = document.getElementById('bps-subject-step');
+    const bpsTableStep = document.getElementById('bps-table-step');
+    const bpsSubjectStatus = document.getElementById('bps-subject-status');
+    const bpsTableStatus = document.getElementById('bps-table-status');
+    const bpsStart = document.getElementById('start-bps-scrape');
+    const currentYear = new Date().getFullYear();
+    document.querySelectorAll('#bps-form input[name="start_year"], #bps-form input[name="end_year"]').forEach((input) => {
+      input.max = currentYear;
+    });
+
+    function bpsKey() { return document.getElementById('bps-api-key').value.trim(); }
+    function resetBpsSubjects() {
+      bpsSubjectStep.hidden = true;
+      bpsTableStep.hidden = true;
+      bpsSubject.replaceChildren(new Option('Pilih jenis data', ''));
+      bpsTable.replaceChildren(new Option('Pilih tabel', ''));
+      bpsSubject.disabled = true;
+      bpsTable.disabled = true;
+      document.getElementById('search-bps-tables').disabled = true;
+      bpsStart.disabled = true;
+      bpsSubjectStatus.textContent = '';
+      bpsTableStatus.textContent = '';
+    }
+
+    document.getElementById('browse-bps-subjects').addEventListener('click', async (event) => {
+      const button = event.currentTarget;
+      if (!bpsKey()) {
+        bpsSubjectStatus.textContent = 'Masukkan API key WebAPI BPS terlebih dahulu.';
+        bpsSubjectStatus.classList.add('status-error');
+        return;
+      }
+      resetBpsSubjects();
+      button.disabled = true;
+      button.textContent = 'Memuat…';
+      bpsSubjectStatus.classList.remove('status-error');
+      bpsSubjectStatus.textContent = 'Memuat jenis data dari BPS…';
+      try {
+        const response = await fetch('/api/bps/subjects', {
+          method: 'POST', headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({api_key: bpsKey(), category_id: bpsCategory.value}),
+        });
+        const payload = await response.json();
+        if (!response.ok) throw new Error(payload.error || 'Jenis data BPS tidak dapat dimuat.');
+        fillSelect(bpsSubject, payload.subjects || [], 'Pilih jenis data');
+        bpsSubject.disabled = false;
+        bpsSubjectStep.hidden = false;
+        bpsSubjectStatus.textContent = `${payload.subjects.length} jenis data ditemukan.`;
+        bpsSubject.onchange = () => {
+          bpsTableStep.hidden = true;
+          bpsTable.replaceChildren(new Option('Pilih tabel', ''));
+          bpsTable.disabled = true;
+          document.getElementById('search-bps-tables').disabled = !bpsSubject.value;
+          bpsStart.disabled = true;
+          bpsTableStatus.textContent = '';
+        };
+      } catch (error) {
+        bpsSubjectStatus.textContent = error.message;
+        bpsSubjectStatus.classList.add('status-error');
+      } finally {
+        button.disabled = false;
+        button.textContent = 'Telusuri';
+      }
+    });
+
+    document.getElementById('search-bps-tables').addEventListener('click', async (event) => {
+      const button = event.currentTarget;
+      if (!bpsSubject.value) return;
+      button.disabled = true;
+      button.textContent = 'Mencari…';
+      bpsTableStatus.classList.remove('status-error');
+      bpsTableStatus.textContent = 'Mencari tabel statistik…';
+      bpsTableStep.hidden = true;
+      bpsStart.disabled = true;
+      try {
+        const response = await fetch('/api/bps/tables', {
+          method: 'POST', headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({api_key: bpsKey(), subject_id: bpsSubject.value}),
+        });
+        const payload = await response.json();
+        if (!response.ok) throw new Error(payload.error || 'Daftar tabel BPS tidak dapat dimuat.');
+        const tableOptions = (payload.tables || []).map((table) => ({
+          id: table.id,
+          name: `${table.title} · ${table.source_name}`,
+        }));
+        fillSelect(bpsTable, tableOptions, 'Pilih tabel');
+        bpsTable.disabled = false;
+        bpsTableStep.hidden = false;
+        bpsTableStatus.textContent = `${tableOptions.length} tabel ditemukan.`;
+        bpsTable.onchange = () => { bpsStart.disabled = !bpsTable.value; };
+        bpsTable.dataset.tableMetadata = JSON.stringify(payload.tables || []);
+      } catch (error) {
+        bpsTableStatus.textContent = error.message;
+        bpsTableStatus.classList.add('status-error');
+      } finally {
+        button.disabled = !bpsSubject.value;
+        button.textContent = 'Cari';
+      }
+    });
+
+    document.getElementById('bps-api-key').addEventListener('input', resetBpsSubjects);
+    bpsCategory.addEventListener('change', resetBpsSubjects);
+
+    document.getElementById('bps-form').addEventListener('submit', (event) => {
+      event.preventDefault();
+      const form = event.currentTarget;
+      const data = new FormData(form);
+      const yearInputs = [...form.querySelectorAll('input[name="start_year"], input[name="end_year"]')];
+      yearInputs.forEach((input) => { input.max = currentYear; });
+      const startYear = Number(data.get('start_year'));
+      const endYear = Number(data.get('end_year'));
+      if (startYear > endYear || endYear - startYear > 100) {
+        bpsTableStatus.textContent = 'Rentang tahun harus berurutan dan maksimal 101 tahun.';
+        bpsTableStatus.classList.add('status-error');
+        return;
+      }
+      submitForm(form, '/api/scrape/bps', () => ({
+        api_key: bpsKey(),
+        category_id: bpsCategory.value,
+        subject_id: data.get('subject_id'),
+        table_id: data.get('table_id'),
+        start_year: startYear,
+        end_year: endYear,
+      }));
+    });
+
+    loadOptions();
+  </script>
+</body>
+</html>

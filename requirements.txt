@@ -1,0 +1,4 @@
+requests
+beautifulsoup4
+openpyxl
+Flask>=3.0,<4.0
